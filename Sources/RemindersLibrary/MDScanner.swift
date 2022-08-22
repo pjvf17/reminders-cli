@@ -41,7 +41,11 @@ public final class MDScanner {
    // Allows for executing commands from the shell (specifically fswatch in this project)
    private func shell(_ command: String) -> String {
          let task = Process()
+<<<<<<< HEAD
          let pipe = Pipe()        
+=======
+         let pipe = Pipe()
+>>>>>>> bf812e3960d0db84930c22b7852152fcac52deda
          task.standardOutput = pipe
          task.standardError = pipe
          task.arguments = ["-c", command]
@@ -77,12 +81,18 @@ public final class MDScanner {
    private func watch(queue:DispatchQueue) {
       queue.async {
          var text:String;
+<<<<<<< HEAD
          // -1: exit fswatch aafter first set of events is recieved
          // -e: exclude REGEX
          // -i: include REGEX
          // last: path(s) to search
          fputs("I've arrived", stderr);
          text = self.shell("fswatch -1 -e '*' "+fsWatchExts+fsWatchDirs)
+=======
+
+         fputs("where", stderr);
+         text = self.shell("fswatch -1 -e '*' -i '*.scan.md$' /Users/pascalvonfintel/Documents")
+>>>>>>> bf812e3960d0db84930c22b7852152fcac52deda
          fputs("File notification: " + text+"\n", stderr);
          self.fire(notif: true)
          self.watch(queue:queue);
@@ -184,6 +194,7 @@ public final class MDScanner {
                var todoName = todo.dropFirst(6);
                // Get date, if there is one
                let dateString = getDate(todo: String(todoName));
+               todoName
                // If dateString, remove dateString from todoName
                todoName = removeDate(todo: String(todoName));
                // Convert dateString to date
