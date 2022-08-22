@@ -91,6 +91,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "show-lists"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "scan"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

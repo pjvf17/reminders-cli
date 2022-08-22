@@ -13,6 +13,14 @@ private let Store = EKEventStore();
 
 let reminders2 = Reminders();
 
+let extensions = ["md", "org"];
+
+var fsWatchExts = "";
+
+let dirs = ["/Users/pascalvonfintel/Documents", "/Users/pascalvonfintel/personal_coding"];
+
+var fsWatchDirs = "";
+
 struct URLUpdates {
    var path:String;
    var updatedAt:Date
@@ -28,10 +36,12 @@ public final class MDScanner {
 
    var urls:[URLUpdates] = [];
    var cals:[ReminderUpdates] = [];
+   var folderURLs =  [URL.init(fileURLWithPath: "/Users/pascalvonfintel/Documents"), URL.init(fileURLWithPath: "/Users/pascalvonfintel/personal_coding")];
 
+   // Allows for executing commands from the shell (specifically fswatch in this project)
    private func shell(_ command: String) -> String {
          let task = Process()
-         let pipe = Pipe()
+         let pipe = Pipe()        
          task.standardOutput = pipe
          task.standardError = pipe
          task.arguments = ["-c", command]
@@ -45,21 +55,34 @@ public final class MDScanner {
       }
 
    public func scan() {
-      fputs("hi\n",stderr);
-      reminders2.showLists();
+      fputs("here first", stderr);
+      // set up fsWatchExts, if empty
+      if (fsWatchExts == "") {
+          for ext in extensions {
+              fsWatchExts.append("-i '*.scan."+ext+"$' ")
+          }
+      }
+      // set up fsWatchDirs, if empty
+      if (fsWatchDirs == "") {
+          for dir in dirs {
+              fsWatchDirs.append(" "+dir);
+          }
+      }      
       let queue = DispatchQueue(label: "com.mytask", attributes: .concurrent)
       NotificationCenter.default.addObserver(self, selector: #selector(self.reloadModelData(notification:)), name: Notification.Name.EKEventStoreChanged, object: nil)         
       watch(queue: queue);
       RunLoop.current.run();
-
    }
 
    private func watch(queue:DispatchQueue) {
       queue.async {
          var text:String;
-
-         fputs("where", stderr);
-         text = self.shell("fswatch -1 -e '*' -i '*.scan.md$' /Users/pascalvonfintel/Documents")
+         // -1: exit fswatch aafter first set of events is recieved
+         // -e: exclude REGEX
+         // -i: include REGEX
+         // last: path(s) to search
+         fputs("I've arrived", stderr);
+         text = self.shell("fswatch -1 -e '*' "+fsWatchExts+fsWatchDirs)
          fputs("File notification: " + text+"\n", stderr);
          self.fire(notif: true)
          self.watch(queue:queue);
@@ -71,22 +94,27 @@ public final class MDScanner {
    }
 
    @objc private func fire(notif:Bool = false) {
-      scan2(notif: notif);
+      // scan2(notif: notif);
    }
 
-   public func scan2(notif:Bool = false) {
+   private func isConnected() -> Bool {
       // Check if Do Not Delete list has the reminder, if not it means that this app has disconnected and should not act
       if (reminders2.returnListItems(withName: String("Do Not Delete")).count == 0) {
-         return;
+         return false;
       }
-      let folderUrls = [URL.init(fileURLWithPath: "/Users/pascalvonfintel/Documents")];
-      // let url = Bundle.main.bundleURL;
-      // fputs(url), stderr;
-      let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
-      var fileURLs: [URL] = []
-      let suffix = ".scan.md";
+      return true
+   }
 
-      for url in folderUrls {
+   // Gets the urls of all matching files in the selected folders
+   private func getFileURLs(folderURLs:[URL]) -> [URL] {
+       let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
+       var fileURLs: [URL] = []
+       var suffixes: [String] = [];
+       for ext in extensions {
+           suffixes.append(".scan."+ext);
+       }
+
+       for url in folderURLs {
          let directoryEnumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: Array(resourceKeys), options: .skipsHiddenFiles)!
          // Find all files with .scan.md in 'url'
          for case let fileURL as URL in directoryEnumerator {
@@ -98,19 +126,35 @@ public final class MDScanner {
                }
             
             if !isDirectory {
-               if (name.suffix(suffix.count) == suffix) {
-                  fileURLs.append(fileURL)
-                  // fputs(name), stderr;
-               }
+                for suffix in suffixes {
+                    if (name.suffix(suffix.count) == suffix) {
+                        fileURLs.append(fileURL)
+                        // fputs(name), stderr;
+                    }
+                }                
             }
          }
+       }
+       return fileURLs;
+   }
+   
+
+   public func scan2(notif:Bool = false) {
+      if (isConnected() == false) {
+          return;
       }
+
+      let fileURLs = getFileURLs(folderURLs:self.folderURLs);
+      
       // Loop through each file with .scan.md
       for url in fileURLs {
-         do {
+          do {
+            // Get all lines of file in an array
             var arrayOfStrings = try String(contentsOf: url).components(separatedBy: "\n")
-
+            
             let resourceValues = try url.resourceValues(forKeys: [.nameKey, .pathKey, .contentModificationDateKey]);
+
+            // Note: Pretty sure this is not doing anything, and is a relic
             // If urls not initialized, or if notification was recieved, bypass
             if (urls.count != 0 && !notif) {
                // If file not more recent, break
@@ -118,6 +162,7 @@ public final class MDScanner {
                   break;
                }
             }
+
             // Name of file without .scan.md
             let name = resourceValues.name!.dropLast(8);
             let lastmodified = resourceValues.contentModificationDate;
@@ -139,7 +184,6 @@ public final class MDScanner {
                var todoName = todo.dropFirst(6);
                // Get date, if there is one
                let dateString = getDate(todo: String(todoName));
-               todoName
                // If dateString, remove dateString from todoName
                todoName = removeDate(todo: String(todoName));
                // Convert dateString to date
@@ -294,6 +338,12 @@ public final class MDScanner {
       cals = [];
       // Second loop through files in order to keep record of what cals and files contained at last go through
       // This is done so we know which file or calendar list has most recently been updated so we can properly sync items
+      //
+      // For urls: store the file info, but most importantly it's recent modification date.
+      // Later, we will check to see if this date is the same as the current modification date of the file.
+      // If it's changed, that means there are updates in the file to push to the cals list
+      //
+      // 
       do {
          for url in fileURLs {
             let resourceValues = try url.resourceValues(forKeys: [.pathKey, .nameKey, .contentModificationDateKey]);
