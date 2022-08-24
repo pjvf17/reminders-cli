@@ -26,5 +26,9 @@ let package = Package(
             name: "RemindersTests",
             dependencies: ["RemindersLibrary",             .product(name: "SystemPackage", package: "swift-system"),]
         ),
+        .testTarget(
+            name: "ScannerTests",
+            dependencies: ["RemindersLibrary",             .product(name: "SystemPackage", package: "swift-system"),]
+        ),
     ]
 )

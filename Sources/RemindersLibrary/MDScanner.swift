@@ -15,6 +15,10 @@ let reminders2 = Reminders();
 
 let extensions = ["md", "org"];
 
+let orgTodoStates = ["TODO"];
+
+let orgDoneStates = ["DONE"];
+
 var fsWatchExts = "";
 
 let dirs = ["/Users/pascalvonfintel/Documents", "/Users/pascalvonfintel/personal_coding"];
@@ -41,11 +45,8 @@ public final class MDScanner {
    // Allows for executing commands from the shell (specifically fswatch in this project)
    private func shell(_ command: String) -> String {
          let task = Process()
-<<<<<<< HEAD
-         let pipe = Pipe()        
-=======
          let pipe = Pipe()
->>>>>>> bf812e3960d0db84930c22b7852152fcac52deda
+
          task.standardOutput = pipe
          task.standardError = pipe
          task.arguments = ["-c", command]
@@ -81,20 +82,14 @@ public final class MDScanner {
    private func watch(queue:DispatchQueue) {
       queue.async {
          var text:String;
-<<<<<<< HEAD
          // -1: exit fswatch aafter first set of events is recieved
          // -e: exclude REGEX
          // -i: include REGEX
          // last: path(s) to search
          fputs("I've arrived", stderr);
-         text = self.shell("fswatch -1 -e '*' "+fsWatchExts+fsWatchDirs)
-=======
-
-         fputs("where", stderr);
-         text = self.shell("fswatch -1 -e '*' -i '*.scan.md$' /Users/pascalvonfintel/Documents")
->>>>>>> bf812e3960d0db84930c22b7852152fcac52deda
+         text = self.shell("fswatch -1 -e '*' "+fsWatchExts+fsWatchDirs);
          fputs("File notification: " + text+"\n", stderr);
-         self.fire(notif: true)
+         self.fire(notif: true);
          self.watch(queue:queue);
       }
    }
@@ -147,7 +142,113 @@ public final class MDScanner {
        }
        return fileURLs;
    }
-   
+
+   // Retrieve name of file without .scan.[ext]
+   private func getFileName(name: String) -> String {
+       for ext in extensions {
+           if (name.hasSuffix(ext)) {
+               return String(name.dropLast((".scan."+ext).count));
+           }
+       }
+       fputs("file " + name + " doesn't match any extension", stderr);
+       exit(1);
+   }
+
+   // returns prefix of an todo org todo if it matches one of the org
+   // todo states. Throws if not valid org todo
+   public func orgTodoMatchesTodoState(todo:String) throws -> String {
+       enum MyError: Error {
+           case invalidOrgTodo(String)
+       }
+        for todoState in orgTodoStates {
+            if let range = todo.range(of: "(\\*)+ "+todoState + " ", options: .regularExpression) {
+                return String(todo[range]);
+            }
+        }
+        throw MyError.invalidOrgTodo("todo " + todo + "is not a valid org todo");
+   }
+
+   // From an array of strings, return the ones that contain todos
+   public func getTodosFromStrings(lines:[String], ext: String) throws -> [String] {
+       enum MyError: Error {
+           case invalidExtension(String)
+       }
+       if (!extensions.contains(ext)) {
+           throw MyError.invalidExtension("ext " + ext + " is unsupported at this time");
+       }
+       if (ext == "org") {
+          return lines.filter({line in
+              let range = NSRange(location: 0, length: line.count);
+              for todoState in orgTodoStates {
+                  let regex = try! NSRegularExpression(pattern: "(\\*)+ "+todoState);
+                  if (regex.firstMatch(in: line, options: [], range: range) != nil) {
+                      return true;
+                  }
+              }
+              for doneState in orgDoneStates {
+                  let regex = try! NSRegularExpression(pattern: "(\\*)+ "+doneState);
+                  if (regex.firstMatch(in: line, options: [], range: range) != nil) {
+                      return true
+                  }
+              }
+              return false;
+          }); 
+                  
+       }
+       if (ext == "md") {
+           return lines.filter({line in
+              return line.prefix(5) == "- [ ]" || line.prefix(5) == "- [x]"; 
+           });
+       }
+       else {
+           fputs("something went weird", stderr);
+           exit(1);
+       }
+   }
+
+   public func todoIsComplete(todo:String, ext:  String) throws -> Bool {
+       enum MyError: Error {
+           case invalidExtension(String)
+           case invalidTodo(String)
+       }
+       if (!extensions.contains(ext)) {
+           throw MyError.invalidExtension("ext " + ext + " is unsupported at this time");
+       }
+       if (ext == "org") {
+           let range = NSRange(location: 0, length: todo.count);
+           for todoState in orgTodoStates {
+               let regex = try! NSRegularExpression(pattern: "(\\*)+ "+todoState);
+               if (regex.firstMatch(in: todo, options: [], range: range) != nil) {
+                   return false;
+               }
+           }
+           for doneState in orgDoneStates {
+               let regex = try! NSRegularExpression(pattern: "(\\*)+ "+doneState);
+               if (regex.firstMatch(in: todo, options: [], range: range) != nil) {
+                   return true
+               }
+           }
+           throw MyError.invalidTodo("todo " + todo + "is invalid");
+       }
+       throw MyError.invalidTodo("todo " + todo + "is invalid");
+   }
+
+   // Input: string that contains todo
+   // Output: string that doesn't have the todo prefix determined by "ext"
+   // public func extractTodo(todo:String, ext: String) throws -> String {
+       
+   // }
+
+   // returns the extension of a valid file or exits if invalid
+   public func getExtFromFile(fileName: String) -> String {
+       for ext in extensions {
+           if (fileName.hasSuffix(ext)) {
+               return ext;
+           }
+       }
+       fputs("file " + fileName + " doesn't match any extension", stderr);
+       exit(1);
+   }
 
    public func scan2(notif:Bool = false) {
       if (isConnected() == false) {
@@ -174,12 +275,10 @@ public final class MDScanner {
             }
 
             // Name of file without .scan.md
-            let name = resourceValues.name!.dropLast(8);
+            let name = getFileName(name:resourceValues.name!)
             let lastmodified = resourceValues.contentModificationDate;
 
-            let todos = arrayOfStrings.filter({line in 
-               return line.prefix(5) == "- [ ]" || line.prefix(5) == "- [x]"; 
-            });
+            let todos = try! getTodosFromStrings(lines: arrayOfStrings, ext: getExtFromFile(fileName: resourceValues.name!));
             // If list does not exist, create it
             if !reminders2.hasList(calendarName: String(name)) {
                reminders2.newList(calendarName: String(name));
@@ -194,7 +293,6 @@ public final class MDScanner {
                var todoName = todo.dropFirst(6);
                // Get date, if there is one
                let dateString = getDate(todo: String(todoName));
-               todoName
                // If dateString, remove dateString from todoName
                todoName = removeDate(todo: String(todoName));
                // Convert dateString to date

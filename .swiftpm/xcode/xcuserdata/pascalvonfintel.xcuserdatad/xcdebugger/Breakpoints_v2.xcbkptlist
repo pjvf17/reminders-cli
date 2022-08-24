@@ -82,6 +82,53 @@
             endingLineNumber = "74"
             landmarkName = "scan()"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "04452B1F-BB63-4978-9CB2-BDA4CE27FD7B - b5252f21e933363c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.scan() -&gt; ()"
+                  moduleName = "reminders"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "74"
+                  endingLineNumber = "74"
+                  offsetFromSymbolStart = "2971">
+               </Location>
+               <Location
+                  uuid = "04452B1F-BB63-4978-9CB2-BDA4CE27FD7B - 7144af442aa14d24"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.scan() -&gt; ()"
+                  moduleName = "RemindersTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "74"
+                  endingLineNumber = "74"
+                  offsetFromSymbolStart = "2971">
+               </Location>
+               <Location
+                  uuid = "04452B1F-BB63-4978-9CB2-BDA4CE27FD7B - 2e842d890958ef07"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.scan() -&gt; ()"
+                  moduleName = "ScannerTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "74"
+                  endingLineNumber = "74"
+                  offsetFromSymbolStart = "2971">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -96,8 +143,55 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "150"
             endingLineNumber = "150"
-            landmarkName = "MDScanner"
-            landmarkType = "3">
+            landmarkName = "getFileName(name:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "D29799F8-1922-49C8-BB78-A573C171ECD4 - 129b828cd114d5a5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.getFileName(name: Swift.String) -&gt; Swift.String"
+                  moduleName = "reminders"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "150"
+                  endingLineNumber = "150"
+                  offsetFromSymbolStart = "1453">
+               </Location>
+               <Location
+                  uuid = "D29799F8-1922-49C8-BB78-A573C171ECD4 - d6fa02e91286aebd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.getFileName(name: Swift.String) -&gt; Swift.String"
+                  moduleName = "RemindersTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "150"
+                  endingLineNumber = "150"
+                  offsetFromSymbolStart = "1453">
+               </Location>
+               <Location
+                  uuid = "D29799F8-1922-49C8-BB78-A573C171ECD4 - 893a8024317f0c9e"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.getFileName(name: Swift.String) -&gt; Swift.String"
+                  moduleName = "ScannerTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "150"
+                  endingLineNumber = "150"
+                  offsetFromSymbolStart = "1453">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -112,8 +206,70 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "157"
             endingLineNumber = "157"
-            landmarkName = "scan2(notif:)"
+            landmarkName = "getTodosFromStrings(lines:ext:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "C9781520-892A-470B-B22C-84B30493974A - 4b7d40436bf07b7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.String) -&gt; Swift.Bool in RemindersLibrary.MDScanner.getTodosFromStrings(lines: Swift.Array&lt;Swift.String&gt;) -&gt; Swift.Array&lt;Swift.String&gt;"
+                  moduleName = "reminders"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "157"
+                  endingLineNumber = "157"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "C9781520-892A-470B-B22C-84B30493974A - c0d65461f52d7caf"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.String) -&gt; Swift.Bool in RemindersLibrary.MDScanner.getTodosFromStrings(lines: Swift.Array&lt;Swift.String&gt;) -&gt; Swift.Array&lt;Swift.String&gt;"
+                  moduleName = "RemindersTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "157"
+                  endingLineNumber = "157"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "C9781520-892A-470B-B22C-84B30493974A - 9f16d6acd6d4de8c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.String) -&gt; Swift.Bool in RemindersLibrary.MDScanner.getTodosFromStrings(lines: Swift.Array&lt;Swift.String&gt;) -&gt; Swift.Array&lt;Swift.String&gt;"
+                  moduleName = "ScannerTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "157"
+                  endingLineNumber = "157"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "C9781520-892A-470B-B22C-84B30493974A - f551c500dc966a7e"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RemindersLibrary.MDScanner.getTodosFromStrings(lines: Swift.Array&lt;Swift.String&gt;, ext: Swift.String) -&gt; Swift.Array&lt;Swift.String&gt;"
+                  moduleName = "ScannerTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/pascalvonfintel/personal_coding/reminders-cli/Sources/RemindersLibrary/MDScanner.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "157"
+                  endingLineNumber = "157"
+                  offsetFromSymbolStart = "981">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
