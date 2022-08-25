@@ -13,11 +13,23 @@ private let Store = EKEventStore();
 
 let reminders2 = Reminders();
 
-let extensions = ["md", "org"];
+class FileExt {
+    let ext:String
+    let todoStateRegexes:[String]
+    let doneStateRegexes:[String]
+    init(ext: String, todoStateRegexes: [String], doneStateRegexes: [String]) {
+        self.ext = ext;
+        self.todoStateRegexes = todoStateRegexes;
+        self.doneStateRegexes = doneStateRegexes;
+    }
+}
 
-let orgTodoStates = ["TODO"];
+let org = FileExt(ext: "org", todoStateRegexes: ["(\\*)+ TODO "], doneStateRegexes: ["(\\*)+ DONE "]);
+let md = FileExt(ext: "md", todoStateRegexes: ["\\- \\[ \\]"], doneStateRegexes: ["\\- \\[x\\]"]);
 
-let orgDoneStates = ["DONE"];
+let exts = ["org", "md"];
+
+let fileExts = ["org":org, "md":md]
 
 var fsWatchExts = "";
 
@@ -63,8 +75,8 @@ public final class MDScanner {
       fputs("here first", stderr);
       // set up fsWatchExts, if empty
       if (fsWatchExts == "") {
-          for ext in extensions {
-              fsWatchExts.append("-i '*.scan."+ext+"$' ")
+          for (_, value) in fileExts {
+              fsWatchExts.append("-i '*.scan."+value.ext+"$' ")
           }
       }
       // set up fsWatchDirs, if empty
@@ -115,8 +127,8 @@ public final class MDScanner {
        let resourceKeys = Set<URLResourceKey>([.nameKey, .isDirectoryKey])
        var fileURLs: [URL] = []
        var suffixes: [String] = [];
-       for ext in extensions {
-           suffixes.append(".scan."+ext);
+       for (_, value) in fileExts {
+           suffixes.append(".scan."+value.ext);
        }
 
        for url in folderURLs {
@@ -145,27 +157,70 @@ public final class MDScanner {
 
    // Retrieve name of file without .scan.[ext]
    private func getFileName(name: String) -> String {
-       for ext in extensions {
-           if (name.hasSuffix(ext)) {
-               return String(name.dropLast((".scan."+ext).count));
+       for (_, value) in fileExts {
+           if (name.hasSuffix(value.ext)) {
+               return String(name.dropLast((".scan."+value.ext).count));
            }
        }
        fputs("file " + name + " doesn't match any extension", stderr);
        exit(1);
    }
 
-   // returns prefix of an todo org todo if it matches one of the org
-   // todo states. Throws if not valid org todo
-   public func orgTodoMatchesTodoState(todo:String) throws -> String {
-       enum MyError: Error {
-           case invalidOrgTodo(String)
-       }
-        for todoState in orgTodoStates {
-            if let range = todo.range(of: "(\\*)+ "+todoState + " ", options: .regularExpression) {
+   // returns prefix of a todo if it matches one of the associated
+   // done states. Throws if not valid todo of that ext 
+   public func todoMatchesTodoState(todo:String, ext:String) throws -> String {
+        enum MyError: Error {
+            case invalidTodo(String)
+            case invalidExt(String)
+        }
+        if (!exts.contains(ext)) {
+            throw MyError.invalidExt("ext " + ext + " is not supported");
+        }
+        for todoState in fileExts[ext]!.todoStateRegexes {
+            if let range = todo.range(of: todoState, options: .regularExpression) {
                 return String(todo[range]);
             }
         }
-        throw MyError.invalidOrgTodo("todo " + todo + "is not a valid org todo");
+        throw MyError.invalidTodo("todo " + todo + "is either not a valid todo or is completed");
+   }
+
+   // returns prefix of a todo if it matches one of the associated
+   // done states. Throws if not valid todo of that ext 
+   public func todoMatchesDoneState(todo:String, ext:String) throws -> String {
+       enum MyError: Error {
+           case invalidTodo(String)
+           case invalidExt(String)
+       }
+       if (!exts.contains(ext)) {
+           throw MyError.invalidExt("ext " + ext + " is not supported");
+       }
+       for doneState in fileExts[ext]!.doneStateRegexes {
+            if let range = todo.range(of: doneState, options: .regularExpression) {
+                return String(todo[range]);
+            }
+        }
+        throw MyError.invalidTodo("todo '" + todo + "' is either not a valid todo or is incomplete");
+   }
+
+   // return prefix of a todo if it is valid, otherwise throws
+   public func todoIsValid(todo:String, ext:String) throws -> String {
+       enum MyError: Error {
+           case invalidOrgTodo(String)
+           case invalidExt(String)
+       }
+       if (!exts.contains(ext)) {
+           throw MyError.invalidExt("ext " + ext + " is not supported");
+       }
+       var res:String = "";
+       do {
+           res = try todoMatchesTodoState(todo:todo, ext:ext);
+           return res
+       } catch {}
+       do {
+           res = try todoMatchesDoneState(todo:todo, ext:ext);
+           return res;
+       } catch {}
+       throw MyError.invalidOrgTodo("todo '" + todo + "' is not a valid org todo");
    }
 
    // From an array of strings, return the ones that contain todos
@@ -173,37 +228,20 @@ public final class MDScanner {
        enum MyError: Error {
            case invalidExtension(String)
        }
-       if (!extensions.contains(ext)) {
+       if (!exts.contains(ext)) {
            throw MyError.invalidExtension("ext " + ext + " is unsupported at this time");
        }
-       if (ext == "org") {
-          return lines.filter({line in
-              let range = NSRange(location: 0, length: line.count);
-              for todoState in orgTodoStates {
-                  let regex = try! NSRegularExpression(pattern: "(\\*)+ "+todoState);
-                  if (regex.firstMatch(in: line, options: [], range: range) != nil) {
-                      return true;
-                  }
-              }
-              for doneState in orgDoneStates {
-                  let regex = try! NSRegularExpression(pattern: "(\\*)+ "+doneState);
-                  if (regex.firstMatch(in: line, options: [], range: range) != nil) {
-                      return true
-                  }
-              }
-              return false;
-          }); 
-                  
-       }
-       if (ext == "md") {
-           return lines.filter({line in
-              return line.prefix(5) == "- [ ]" || line.prefix(5) == "- [x]"; 
-           });
-       }
-       else {
-           fputs("something went weird", stderr);
-           exit(1);
-       }
+       return lines.filter({line in
+           do {
+               try todoIsValid(todo:line, ext:ext);
+               return true;
+           } catch {
+               return false
+           }
+       }); 
+       
+       fputs("something went weird", stderr);
+       exit(1);
    }
 
    public func todoIsComplete(todo:String, ext:  String) throws -> Bool {
@@ -211,25 +249,17 @@ public final class MDScanner {
            case invalidExtension(String)
            case invalidTodo(String)
        }
-       if (!extensions.contains(ext)) {
+       if (!exts.contains(ext)) {
            throw MyError.invalidExtension("ext " + ext + " is unsupported at this time");
        }
-       if (ext == "org") {
-           let range = NSRange(location: 0, length: todo.count);
-           for todoState in orgTodoStates {
-               let regex = try! NSRegularExpression(pattern: "(\\*)+ "+todoState);
-               if (regex.firstMatch(in: todo, options: [], range: range) != nil) {
-                   return false;
-               }
-           }
-           for doneState in orgDoneStates {
-               let regex = try! NSRegularExpression(pattern: "(\\*)+ "+doneState);
-               if (regex.firstMatch(in: todo, options: [], range: range) != nil) {
-                   return true
-               }
-           }
-           throw MyError.invalidTodo("todo " + todo + "is invalid");
-       }
+       do {
+           try todoMatchesTodoState(todo:todo, ext:ext);
+           return false;
+       } catch {}
+       do {
+           try todoMatchesDoneState(todo:todo, ext:ext);
+           return true;
+       } catch {}
        throw MyError.invalidTodo("todo " + todo + "is invalid");
    }
 
@@ -241,7 +271,7 @@ public final class MDScanner {
 
    // returns the extension of a valid file or exits if invalid
    public func getExtFromFile(fileName: String) -> String {
-       for ext in extensions {
+       for ext in exts {
            if (fileName.hasSuffix(ext)) {
                return ext;
            }
