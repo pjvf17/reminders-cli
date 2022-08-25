@@ -25,7 +25,7 @@ class FileExt {
 }
 
 let org = FileExt(ext: "org", todoStateRegexes: ["(\\*)+ TODO "], doneStateRegexes: ["(\\*)+ DONE "]);
-let md = FileExt(ext: "md", todoStateRegexes: ["\\- \\[ \\]"], doneStateRegexes: ["\\- \\[x\\]"]);
+let md = FileExt(ext: "md", todoStateRegexes: ["\\- \\[ \\] "], doneStateRegexes: ["\\- \\[x\\] "]);
 
 let exts = ["org", "md"];
 
